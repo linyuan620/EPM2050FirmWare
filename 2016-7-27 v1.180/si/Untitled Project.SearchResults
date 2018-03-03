@@ -1,0 +1,9 @@
+---- 44000 Matches (8 in 5 files) ----
+Key.c (d:\project\codeworkdir\2016-7-27 v1.180\app):		case 0x04400000:  //擦除数据控制
+Lcd.c (d:\project\codeworkdir\2016-7-27 v1.180\app):			case 0x04400000:
+LPC17xx.h (d:\project\codeworkdir\2016-7-27 v1.180\core\cm3\devicesupport\nxp\lpc17xx):#define LPC_CAN1_BASE         (LPC_APB0_BASE + 0x44000)
+Menu.c (d:\project\codeworkdir\2016-7-27 v1.180\app):{  0x04400000,4, 4, 1, 1,//46
+Store.c (d:\project\codeworkdir\2016-7-27 v1.180\app):	recordP = (recordP*64)%0x44000;// 4352组数据  68个扇区  0x44000个字节。半年多的数据。
+Store.c (d:\project\codeworkdir\2016-7-27 v1.180\app):	if( (((recordP)%0x44000)/SEC_SIZE) !=  (((recordP+64)%0x44000)/SEC_SIZE)  )//下一组将要占用新的一个扇区。
+Store.c (d:\project\codeworkdir\2016-7-27 v1.180\app):			SSTF016B_Erase( (((recordP+64)%0x44000+RECORDFLASHSTAR)/SEC_SIZE), (((recordP+64)%0x44000+RECORDFLASHSTAR)/SEC_SIZE));
+Store.c (d:\project\codeworkdir\2016-7-27 v1.180\app):	recordP = (recordP*64)%0x44000;// 4352组数据  68个扇区  0x44000个字节。半年多的数据。

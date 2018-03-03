@@ -1,0 +1,345 @@
+/****************************************Copyright (c)****************************************************
+**                            		skyray-instrument Co.,LTD.
+**
+**                                 http://www.skyray-instrument.com
+**
+**--------------File Info---------------------------------------------------------------------------------
+** File Name:           times.c
+** Last modified Date:  2011-02-24
+** Last Version:        V1.0
+** Descriptions:        
+**
+**--------------------------------------------------------------------------------------------------------
+** Created By:          方卫龙
+** Created date:        2011-02-24
+** Version:             V1.0
+** Descriptions:        First version
+**
+**--------------------------------------------------------------------------------------------------------
+** Modified by:         方卫龙   
+** Modified date:       2011-02-24       
+** Version:             V1.X           
+** Descriptions:                            
+**
+*********************************************************************************************************/
+#include "times.h"
+
+volatile uint32_t delayMsCnt;
+// volatile uint32_t delayMsFlg = 0;
+
+uint32 iCountTime2 = 0;		//定时器2累计运行位
+// uint32 iCountTime2AD = 0; 	//采集点数累计器
+// uint8  iCountTime2Flag = 0; //差分脉冲周期标志
+// uint32 countValue;
+
+// fp32	valueAD1 = 0;
+// fp32    valueAD2 = 0;
+// uint8 iCountTime1Flag = 0;
+
+uint16  BPtimer=0;		//蜂鸣器时间位
+uint16  BPcount=0;		//蜂鸣器时间变化位
+uint16  BPoffTime=0;	//蜂鸣器开始间
+uint16  BPonTime=0;		//蜂鸣器关时间
+//int8_t 	T35Flag=7;//3.5T标志位 
+//int8_t 	T15Flag=3;//1.5T标志位 
+
+/*********************************************************************************************************
+* Function name:	    DelayMs
+* Descriptions:	    	延时1ms
+* input parameters:    	timeTick	
+* output parameters:   	无
+* Returned value:      	无
+*********************************************************************************************************/
+//volatile void DelayMs(uint32_t timeTick)
+//{
+//	while(delayMsFlg);
+//	delayMsFlg=1;
+//	delayMsCnt=timeTick*20;
+//	while(delayMsCnt);
+//	delayMsFlg=0;
+//
+//}
+
+/*********************************************************************************************************
+* Function name:	    Time0Init
+* Descriptions:	    	初始化1ms中断
+* input parameters:    	无	
+* output parameters:   	无
+* Returned value:      	无
+*********************************************************************************************************/
+void Time0Init(void)//按键，蜂鸣器
+{
+	TIM_TIMERCFG_Type TIM_ConfigStruct;
+	TIM_MATCHCFG_Type TIM_MatchConfigStruct ;
+	// Initialize timer 0, prescale count time of 100uS
+	TIM_ConfigStruct.PrescaleOption = TIM_PRESCALE_USVAL;
+	TIM_ConfigStruct.PrescaleValue	= 10;
+
+	// use channel 0, MR0
+	TIM_MatchConfigStruct.MatchChannel = 0;
+	// Disable interrupt when MR0 matches the value in TC register
+	TIM_MatchConfigStruct.IntOnMatch   = TRUE;
+	//Enable reset on MR0: TIMER will reset if MR0 matches it
+	TIM_MatchConfigStruct.ResetOnMatch = TRUE;
+	//Stop on MR0 if MR0 matches it
+	TIM_MatchConfigStruct.StopOnMatch  = FALSE;
+	//Nothing MR0.0 pin if MR0 matches it
+	TIM_MatchConfigStruct.ExtMatchOutputType =TIM_EXTMATCH_NOTHING;
+	// Set Match value, count value of 1000 (10 * 100uS = 1mS --> 10Hz)
+	//TIM_MatchConfigStruct.MatchValue   = 10000;
+	TIM_MatchConfigStruct.MatchValue   = 2000;//100;
+
+	// Set configuration for Tim_config and Tim_MatchConfig
+	TIM_Init(LPC_TIM0, TIM_TIMER_MODE,&TIM_ConfigStruct);
+	TIM_ConfigMatch(LPC_TIM0,&TIM_MatchConfigStruct);
+	/* preemption = 1, sub-priority = 1 */
+	NVIC_SetPriority(TIMER0_IRQn, ((PRIO_GROUP_T0<<3)|PRIO_T0));
+	/* Enable interrupt for timer 0 */
+	NVIC_EnableIRQ(TIMER0_IRQn);
+	TIM_Cmd(LPC_TIM0,ENABLE);
+}
+
+/*********************************************************************************************************
+* Function name:	    TIMER0_IRQHandler
+* Descriptions:	    	TIMER0 interrupt handler sub-routine
+* input parameters:    	无	
+* output parameters:   	无
+* Returned value:      	无
+*********************************************************************************************************/
+void TIMER0_IRQHandler(void)
+{
+	if (TIM_GetIntStatus(LPC_TIM0, TIM_MR0_INT)== SET)
+	{	/*时间到不蜂鸣*/
+		if(TimeMotoCount>0)
+		{
+			TimeMotoCount--;
+		}
+		if(TimeKeyCount>0)
+		{
+			TimeKeyCount--;
+		}
+		
+	   if(0!=KeyTimer)													   //按键延时
+	   {
+	       KeyTimer--;
+	   }		
+	   if(keyBuzzerBitFlg==1)
+	   {
+		   if(BPtimer<=(0xffff-BPonTime))
+			{
+			   SetBuzzer(0);
+			}
+			/*蜂鸣*/ 
+			if((0!=BPcount)&&(0==BPtimer))
+			{
+			   BPtimer=0xffff;
+			   SetBuzzer(1);
+			   BPcount--;
+			}   
+			if(0!=BPtimer)
+			{
+			   BPtimer--;
+			}
+			     
+			if(BPtimer<=(0xffff-BPonTime-BPoffTime))
+			{
+			   BPtimer=0;
+			} 
+	   }
+
+	}
+	TIM_ClearIntPending(LPC_TIM0, TIM_MR0_INT);
+}
+
+/*********************************************************************************************************
+* Function name:	    Time1Init
+* Descriptions:	    	初始化中断,用于从机LED发射
+* input parameters:    	无	
+* output parameters:   	无
+* Returned value:      	无
+*********************************************************************************************************/
+void Time1Init(uint32_t matchValue)
+{
+	TIM_TIMERCFG_Type TIM_ConfigStruct;
+	TIM_MATCHCFG_Type TIM_MatchConfigStruct ;
+	/*Initialize timer 0, prescale count time of 10uS*/
+	TIM_ConfigStruct.PrescaleOption = TIM_PRESCALE_USVAL;
+	TIM_ConfigStruct.PrescaleValue	= 1;
+
+	/* use channel 1, MR1 */
+	TIM_MatchConfigStruct.MatchChannel = 1;
+	/* Disable interrupt when MR1 matches the value in TC register*/
+	TIM_MatchConfigStruct.IntOnMatch   = TRUE;
+	/* Enable reset on MR0: TIMER will reset if MR0 matches it */
+	TIM_MatchConfigStruct.ResetOnMatch = TRUE;
+	/* Stop on MR0 if MR0 matches it */
+	TIM_MatchConfigStruct.StopOnMatch  = FALSE;
+	/* Nothing MR0.0 pin if MR0 matches it */
+	TIM_MatchConfigStruct.ExtMatchOutputType =TIM_EXTMATCH_NOTHING;
+	/* Set Match value, count value of 1000 (10 * 100uS = 1mS --> 10Hz)
+	 TIM_MatchConfigStruct.MatchValue   = 10000;*/
+	TIM_MatchConfigStruct.MatchValue   = 10000;//matchValue;
+
+	/* Set configuration for Tim_config and Tim_MatchConfig */
+	TIM_Init(LPC_TIM1, TIM_TIMER_MODE,&TIM_ConfigStruct);
+	TIM_ConfigMatch(LPC_TIM1,&TIM_MatchConfigStruct);
+	/* preemption = 1, sub-priority = 1 */
+	NVIC_SetPriority(TIMER1_IRQn, ((PRIO_GROUP_T1<<3)|PRIO_T1));
+	/* Enable interrupt for timer 1 */
+	NVIC_EnableIRQ(TIMER1_IRQn);
+	TIM_Cmd(LPC_TIM1,DISABLE);
+}
+
+/*********************************************************************************************************
+* Function name:	    TIMER1_IRQHandler
+* Descriptions:	    	TIMER1 interrupt handler sub-routine  AD 间隔延时采集，定时参数由wave。c函数设置完成
+* input parameters:    	无	
+* output parameters:   	无
+* Returned value:      	无
+*********************************************************************************************************/
+void TIMER1_IRQHandler(void)
+{
+	if (TIM_GetIntStatus(LPC_TIM1, TIM_MR1_INT)== SET)
+	{
+		Time10mSHandle();
+		TIM_Cmd(LPC_TIM1,DISABLE);	//关定时器1中断
+	}
+	TIM_ClearIntPending(LPC_TIM1, TIM_MR1_INT);
+}
+/*********************************************************************************************************
+* Function name:	    Time2Init
+* Descriptions:	    	初始化中断,用于
+* input parameters:    	无	
+* output parameters:   	无
+* Returned value:      	无
+*********************************************************************************************************/
+void Time2Init(void)//freemodbus  0.5个字符延时
+{
+
+	TIM_TIMERCFG_Type TIM_ConfigStruct;
+	TIM_MATCHCFG_Type TIM_MatchConfigStruct ;
+	// Initialize timer 0, prescale count time of 100uS
+	TIM_ConfigStruct.PrescaleOption = TIM_PRESCALE_USVAL;
+	TIM_ConfigStruct.PrescaleValue	= 1;
+
+	// use channel 0, MR0
+	TIM_MatchConfigStruct.MatchChannel = 2;
+	// Disable interrupt when MR0 matches the value in TC register
+	TIM_MatchConfigStruct.IntOnMatch   = TRUE;
+	//Enable reset on MR0: TIMER will reset if MR0 matches it
+	TIM_MatchConfigStruct.ResetOnMatch = TRUE;
+	//Stop on MR0 if MR0 matches it
+	TIM_MatchConfigStruct.StopOnMatch  = FALSE;
+	//Nothing MR0.0 pin if MR0 matches it
+	TIM_MatchConfigStruct.ExtMatchOutputType =TIM_EXTMATCH_NOTHING;
+	// Set Match value, count value of 1000 (10 * 100uS = 1mS --> 10Hz)
+	TIM_MatchConfigStruct.MatchValue   = 10000;
+	//TIM_MatchConfigStruct.MatchValue   = 250;
+
+	// Set configuration for Tim_config and Tim_MatchConfig
+	TIM_Init(LPC_TIM2, TIM_TIMER_MODE,&TIM_ConfigStruct);
+	TIM_ConfigMatch(LPC_TIM2,&TIM_MatchConfigStruct);
+	/* preemption = 1, sub-priority = 1 */
+	NVIC_SetPriority(TIMER2_IRQn, ((PRIO_GROUP_T2<<3)|PRIO_T2));
+	/* Enable interrupt for timer 1 */
+	NVIC_EnableIRQ(TIMER2_IRQn);
+	TIM_Cmd(LPC_TIM2,DISABLE);
+
+}
+
+/*********************************************************************************************************
+* Function name:	    TIMER2_IRQHandler
+* Descriptions:	    	TIMER2 interrupt handler sub-routine,用于DA发生
+* input parameters:    	无	
+* output parameters:   	无
+* Returned value:      	无
+*********************************************************************************************************/
+
+
+void ModbusProc(void) 
+{ 
+	if(T15CountEn)
+	{
+		if(T15Flag>0) 
+		{
+			T15Flag--;//1.5T的变量 
+		}
+		if(T15Flag == 0)//1.5T的时间到了，记录长度 
+		{ 
+		   T15_Exception();
+		} 		
+	}
+	if(	T35CountEn )
+	{
+		if(T35Flag>0)
+		{
+			T35Flag--;//3.5T的变量 
+		}
+		if(T35Flag == 0)//3.5T的时间到 
+		{ 
+		   T35_Exception();
+		}		
+	}
+	if(T10msCountEn)
+	{
+		if(T10msFlag>0)
+		{
+			T10msFlag--;//10ms的变量 
+		}
+		if(T10msFlag==0)//	10ms的变量dao
+		{
+			T10ms_Exception();// 
+		}
+	}
+ 
+}
+
+
+void TIMER2_IRQHandler(void)
+{
+	
+	if (TIM_GetIntStatus(LPC_TIM2, TIM_MR2_INT)== SET)
+	{
+		ModbusProc();
+	}
+	TIM_ClearIntPending(LPC_TIM2, TIM_MR2_INT);
+}
+
+/*********************************************************************************************************
+* Function name:	    Time3Init
+* Descriptions:	    	初始化中断,用于系统服务 modbus
+* input parameters:    	无	
+* output parameters:   	无
+* Returned value:      	无
+*********************************************************************************************************/
+void Time3Init(void)
+{
+	TIM_TIMERCFG_Type TIM_ConfigStruct;
+	TIM_MATCHCFG_Type TIM_MatchConfigStruct ;
+	// Initialize timer 0, prescale count time of 10uS
+	TIM_ConfigStruct.PrescaleOption = TIM_PRESCALE_USVAL;
+	TIM_ConfigStruct.PrescaleValue	= 10;
+
+	// use channel 0, MR0
+	TIM_MatchConfigStruct.MatchChannel = 3;
+	// Disable interrupt when MR0 matches the value in TC register
+	TIM_MatchConfigStruct.IntOnMatch   = TRUE;
+	//Enable reset on MR0: TIMER will reset if MR0 matches it
+	TIM_MatchConfigStruct.ResetOnMatch = TRUE;
+	//Stop on MR0 if MR0 matches it
+	TIM_MatchConfigStruct.StopOnMatch  = FALSE;
+	//Nothing MR0.0 pin if MR0 matches it
+	TIM_MatchConfigStruct.ExtMatchOutputType =TIM_EXTMATCH_NOTHING;
+	// Set Match value, count value of 1000 (10 * 100uS = 1mS --> 10Hz)
+	//TIM_MatchConfigStruct.MatchValue   = 10000;
+	TIM_MatchConfigStruct.MatchValue   = 100;
+
+	// Set configuration for Tim_config and Tim_MatchConfig
+	TIM_Init(LPC_TIM3, TIM_TIMER_MODE,&TIM_ConfigStruct);
+	TIM_ConfigMatch(LPC_TIM3,&TIM_MatchConfigStruct);
+	/* preemption = 1, sub-priority = 1 */
+	NVIC_SetPriority(TIMER3_IRQn, ((PRIO_GROUP_T3<<3)|PRIO_T3));
+	/* Enable interrupt for timer 1 */
+	NVIC_EnableIRQ(TIMER3_IRQn);
+	TIM_Cmd(LPC_TIM3,DISABLE);
+}

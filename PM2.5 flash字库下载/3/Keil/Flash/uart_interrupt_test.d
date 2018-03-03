@@ -1,0 +1,15 @@
+.\Flash\uart_interrupt_test.o: ..\uart_interrupt_test.c
+.\Flash\uart_interrupt_test.o: ..\app\include\Globle.h
+.\Flash\uart_interrupt_test.o: ..\Drivers\include\lpc17xx_uart.h
+.\Flash\uart_interrupt_test.o: ..\Core\CM3\DeviceSupport\NXP\LPC17xx\LPC17xx.h
+.\Flash\uart_interrupt_test.o: ..\Core\CM3\CoreSupport\core_cm3.h
+.\Flash\uart_interrupt_test.o: d:\Keil\ARM\RV31\INC\stdint.h
+.\Flash\uart_interrupt_test.o: ..\Core\CM3\DeviceSupport\NXP\LPC17xx\system_LPC17xx.h
+.\Flash\uart_interrupt_test.o: ..\Drivers\include\lpc_types.h
+.\Flash\uart_interrupt_test.o: ..\..\time\lpc17xx_libcfg.h
+.\Flash\uart_interrupt_test.o: ..\Drivers\include\lpc17xx_pinsel.h
+.\Flash\uart_interrupt_test.o: ..\Drivers\include\lpc17xx_gpio.h
+.\Flash\uart_interrupt_test.o: d:\Keil\ARM\RV31\INC\string.h
+.\Flash\uart_interrupt_test.o: ..\app\include\Dio.H
+.\Flash\uart_interrupt_test.o: ..\app\include\Globle.h
+.\Flash\uart_interrupt_test.o: ..\app\include\GPS.H

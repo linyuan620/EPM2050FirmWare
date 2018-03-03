@@ -1,0 +1,172 @@
+/****************************************Copyright (c)****************************************************
+**                            		skyray-instrument Co.,LTD.
+**
+**                                 http://www.skyray-instrument.com
+**
+**--------------File Info---------------------------------------------------------------------------------
+** File Name:           ad.c
+** Last modified Date:  2011-02-24
+** Last Version:        V1.0
+** Descriptions:
+**
+**--------------------------------------------------------------------------------------------------------
+** Created By:          方卫龙
+** Created date:        2011-02-24
+** Version:             V1.0
+** Descriptions:        First version
+**
+**--------------------------------------------------------------------------------------------------------
+** Modified by:         方卫龙
+** Modified date:       2011-02-24
+** Version:             V1.X
+** Descriptions:
+**
+*********************************************************************************************************/
+#include "ad.h"
+
+fp32 GainRes[8]= {RES1,RES2,RES3,RES4,RES5,RES6,RES7,RES8};  // //电流增益档电阻
+
+/*********************************************************************************************************
+* Function name:        DelayAD
+* Descriptions:         用于AD的延时函数,内部调用
+* input parameters:     延时的数字
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+volatile void DelayAD(int32_t ulTime)
+{
+    while (ulTime--);
+}
+/*********************************************************************************************************
+* Function name:        ADIOInit
+* Descriptions:         AD的IO初始化
+* input parameters:     无
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+void ADIOInit(void)
+{
+    GPIO_SetDir(1,(SCK_7606|RST_7606),1);
+    GPIO_SetDir(3,(CS_7606|CONVST_7606),1);
+    GPIO_SetDir(1,(SDO_7606|CONV_BUSY),0);
+}
+
+/*********************************************************************************************************
+* Function Name:        ADRst
+* Description:          AD复位
+* Input:                无
+* Output:               无
+* Return:               无
+*********************************************************************************************************/
+void ADRst(void)
+{
+    SET_RST_7606(0);	  //AD复位
+    SET_RST_7606(1);
+    DelayAD(10);
+    SET_RST_7606(0);
+    DelayAD(50);
+}
+
+/*********************************************************************************************************
+* Function Name:        GetADValue
+* Description:          AD采样
+* Input:                无
+* Output:               无
+* Return:               无
+*********************************************************************************************************/
+uint16 GetADValue(void)
+{
+    uint16 i,Outwait =500;
+    uint16 value = 0;
+    uint32 GPOValue = 0;
+
+    SET_CS_7606(1);
+    SET_SCK_7606(1);
+
+    SET_CONVST_7606(1);
+    SET_CONVST_7606(0);
+    DelayAD(30);		   //2us左右
+    SET_CONVST_7606(1);
+    DelayAD(50);		   //3us左右
+
+    while(GPIO_ReadValue(1) & CONV_BUSY)		//等待转化完成
+    {
+        Outwait --;			  //防止无限等待
+        if(0 ==Outwait)
+            break;
+    }
+    SET_CS_7606(0);
+
+    for(i=0; i<16; i++)
+    {
+        DelayAD(1);
+        SET_SCK_7606(0);
+        DelayAD(1);
+        GPOValue = (GPIO_ReadValue(1)&SDO_7606);
+        if(GPOValue)
+        {
+            value |=(0x8000>>i);
+        }
+        SET_SCK_7606(1);
+
+    }
+
+    return value;
+}
+
+/*********************************************************************************************************
+* Function Name:        GetADVoltage
+* Description:          AD采样一定点的电压值
+* Input:                无
+* Output:               无
+* Return:               无
+*********************************************************************************************************/
+fp32 GetADVoltage(uint8 point)
+{
+    uint8 i;
+    fp32 arrVoltage[32];
+    fp32 voltage =0.0;
+
+    if(point > 32)
+    {
+        point = 32;
+    }
+
+    for(i=0; i<point; i++)
+    {
+        //arrVoltage[i] = ((int16)GetADValue())*30.5176/GainRes[currentGain];		   // 10,000*100/32,768 = 30.517578125 mv/lsb
+        arrVoltage[i] = (int16)GetADValue();									  //直接记录AD转化值
+    }
+    voltage = AverageSelectFp(arrVoltage,point);
+    return voltage;
+}
+
+/*********************************************************************************************************
+* Function Name:        JudgeCurrent
+* Description:          判定电流时候超过320uA,如果超过则电流*100，反之电流*10，同时usRegInputBuf[98]=100或者10
+* Input:                *usRegHoldingBuf
+* Output:               无
+* Return:               无
+*********************************************************************************************************/
+void JudgeCurrent(int16 *buffer,uint32 length)
+{
+    uint16 i;
+    //最大电流大于320uA,则电流*10，usRegInputBuf[98]=10
+    if(V_for_I_max*0.3052/GainRes[currentGain] >320.0)
+    {
+        for(i = 0; i < length ; i++)
+        {
+            buffer[i+100] =	buffer[i+100]*3.05176/GainRes[currentGain];
+        }
+        usRegInputBuf[98]=10;
+    }
+    //最大电流小于320uA,则电流*100，usRegInputBuf[98]=100
+    else
+    {
+        for(i = 0; i < length ; i++)
+        {
+            buffer[i+100] =	buffer[i+100]*30.5176/GainRes[currentGain];
+        }
+        usRegInputBuf[98]=100;
+    }
+}

@@ -1,0 +1,11 @@
+
+1、 加入条件预编译 否定，不用预编译，用全集变量来控制。
+ //#if  #elif  #endif
+if()
+else
+
+main.c 中初始化处
+通信任务处**if
+
+
+2、mbconfig.h 中

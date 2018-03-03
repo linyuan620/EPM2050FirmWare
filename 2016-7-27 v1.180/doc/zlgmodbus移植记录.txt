@@ -1,0 +1,35 @@
+名称 ZLG_MODBUS_RTU
+背景：1、需要2路modbus一路是从机，使用freemodbus，一路是主机采用zlgmodbus master
+	2、之前整合了简易版的zlgmodbus，但是是用于从机的。需要改掉。
+
+
+计划步骤，1去掉原来的zlgmodbus  
+              屏蔽h文件，删除c文件，初始化中断定时器2和串口3屏蔽掉 串口3中的相应处理。定时器2中的相应处理
+          2加入master modbus  
+		添加相应文件，添加h文件的路径 将zlg的modbus.h改为modbus2.h 删掉了仪器的modbus2.h 添加了SYSHAL.C将里面的程序内容屏蔽，换为自己的代码。 10ms中断试着和1.5 3.5 延时搞上关系，争取一个定时器搞定。字符时间算法 1baud=1bit/s。1个字符在RTU模式下是以8位二进制形式传输的，故3.5个字符时间就是3.5*8个bit传输的时间。3.5个字符时间=3.5*8*1/9600秒
+syshal的串口中断处理函数屏蔽掉在原来的的中断函数中处理 串口接收后进入函数ReceOneChar
+          
+
+#define MB_POLL_TIMEOUT	 	100
+#define MB_POLL_DELAY		5
+改为
+#define MB_POLL_TIMEOUT	 	1
+#define MB_POLL_DELAY		1
+
+在定时器初始化前加入简单的ModbusProc函数 用于处理 1.5 3.5 40 后的相应处理。
+经过分析10ms不好处理3.5后必须停止定时器，40到不了尝试器他共用定时器，或者模拟延时
+使用timer1实现10ms延时及中断处理
+
+
+          3添加主机任务
+
+***PendSV_Handler  把os_cpu_a.asm中的OS_CPU_PendSVHandler改成PendSV_Handler  不用，原因是分配的堆栈不够，由5000改为7000即可。
+
+测试任务调度情况，在串口0中加入post函数，测试其效果，先前在电池任务中加post被其他优先级的抢占。现在简单测试成功。
+具体编写主机命令。及数据反馈处理。
+
+2013-5-29 13:16:53
+poll里信号量等待0改为1000；
+使用方法示例：OSWriteSingleCoil(0x01,0,COIL_ON);
+
+将t35中断中// 		PDUData.FrameOK=TRUE;屏蔽掉。

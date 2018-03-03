@@ -1,0 +1,229 @@
+/*********************************************************************************************************
+Copyright (C), 2011-8-3 ,  Skyray Instrment Co.,LTD.
+File name:      	public.h
+Author:             方卫龙       Version:       V2.5 Date:      2011-8-3 11:37:43
+Description:    	公用的常用函数集
+
+Others:         
+Function List:  
+		extern volatile void Delay100uS(uint32 dly);
+		extern volatile void DelayuS(uint32 dly);
+		extern volatile void Delay(uint32 dly); 
+		extern void Uint16ToMod(uint8 *arr,uint16 dat);//modbus用，字变字节
+		extern uint16 ModToUint16(uint8 *arr);//字节变字
+		extern uint8 LongIntegerToBit(uint32 ulSource,uint8 *pTarget);//长字变字节
+		extern uint8 IntegerToBitAscii(uint32 dat,uint8 *pArr);//整形变为ascii值
+		extern void disSeondTime(uint16 dat,uint8 *pArr);//将时间分开放入数组
+		extern void FloatToChArray(fp32 Source,uint8 *Target);//浮点变字节
+		extern fp32 ChArrayToFloat(uint8 *Source);//字节变浮点
+		extern fp32 Int16ArrayToFloat(uint16 *Source);//字变浮点
+		extern uint32 AverageSelectUint16(uint16 *dat,uint8 length);//对字数组排序取中间的平均值
+		extern fp32 AverageSelectFp(fp32 *dat,uint8 length);//对字数组排序取中间的平均值
+		extern fp32 MovingAverage(int16 *dat,uint32 length,uint8 num);//移动平均
+		extern uint16 LzgCStrlen(uint8 const s[]);//返回 数组长度
+		extern uint16 LzgChineselen(uint8 const s[]);
+		extern void StrCopyStr (uint8 *arr1,uint8 *arr2,uint8 length);//复制length 长度的字符串
+History:         
+   1. Date:                2011-8-3 12:52:43
+       Author:             何顺杰
+	   Modification:    规范了注释
+************************************************************************************************************/
+#ifndef __PUBLIC_H
+#define __PUBLIC_H
+
+/*********************************************************************************************************
+**               头文件包含                                                                             
+*********************************************************************************************************/
+#include "global.h"
+
+/*********************************************************************************************************
+**               C++代码兼容                                                                            
+*********************************************************************************************************/
+#ifdef __cplusplus
+extern "C" {
+#endif                                                                  /*  __cplusplus                 */
+
+extern volatile uint16 V_for_I_max;
+/*********************************************************************************************************
+* Function name:        Delay10uS
+* Descriptions:         小延时函数
+* input parameters:     dly
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern volatile void Delay100uS(uint32 dly);
+
+/*********************************************************************************************************
+* Function name:        DelayuS
+* Descriptions:         小延时函数
+* input parameters:     dly
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern volatile void DelayuS(uint32 dly);
+
+/*********************************************************************************************************
+* Function name:        Delay
+* Descriptions:         小延时函数
+* input parameters:     dly
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern volatile void Delay(uint32 dly); 
+
+/*********************************************************************************************************
+* Function name:        Uint16ToMod
+* Descriptions:         modbus用，字变字节
+* input parameters:     *arr		字节指针
+*						dat			要变化的字
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern void Uint16ToMod(uint8 *arr,uint16 dat);
+
+/*********************************************************************************************************
+* Function name:        ModToUint16
+* Descriptions:         modbus用，字节变字
+* input parameters:     *arr		字节指针
+* output parameters:    无
+* Returned value:       字
+*********************************************************************************************************/
+extern uint16 ModToUint16(uint8 *arr);
+
+/*********************************************************************************************************
+* Function name:        LongIntegerToBit
+* Descriptions:         长字变字节
+* input parameters:     ulSource	长字
+* output parameters:    *pTarget	字节数组
+* Returned value:       0
+*********************************************************************************************************/
+extern uint8 LongIntegerToBit(uint32 ulSource,uint8 *pTarget);
+
+/*********************************************************************************************************
+* Function name:  IntegerToBitAscii     
+* Descriptions:    整形变为ascii值     
+* input parameters: uint16 dat,uint8 *pArr  整形  对应的ascii   
+* output parameters:     无
+* Returned value:          无
+*********************************************************************************************************/
+extern uint8 IntegerToBitAscii(uint32 dat,uint8 *pArr);
+
+/*********************************************************************************************************
+* Function name:   disSeondTime     
+* Descriptions:    将时间分开放入数组     
+* input parameters: uint16 dat,uint8 *pArr  时间  数组   
+* output parameters:     无
+* Returned value:          无
+*********************************************************************************************************/
+extern void disSeondTime(uint16 dat,uint8 *pArr);
+
+/*********************************************************************************************************
+* Function name:        FloatToChArray
+* Descriptions:         浮点变字节
+* input parameters:     Source	浮点数
+* output parameters:    *Target	字节数组
+* Returned value:       无
+*********************************************************************************************************/
+extern void FloatToChArray(fp32 Source,uint8 *Target);
+/*********************************************************************************************************
+* Function name:        Float64ToChArray
+* Descriptions:         浮点变字节
+* input parameters:     Source	浮点数
+* output parameters:    *Target	字节数组
+* Returned value:       无
+*********************************************************************************************************/
+extern void Float64ToChArray(fp64 Source,uint8 *Target);
+
+
+
+
+
+/*********************************************************************************************************
+* Function name:        ChArrayToFloat
+* Descriptions:         字节变浮点
+* input parameters:     *Source	字节数组
+* output parameters:    无
+* Returned value:       浮点数
+*********************************************************************************************************/
+extern fp32 ChArrayToFloat(uint8 *Source);
+
+/*********************************************************************************************************
+* Function name:        Int16ArrayToFloat
+* Descriptions:         字变浮点
+* input parameters:     *Source	字数组
+* output parameters:    无
+* Returned value:       浮点数
+*********************************************************************************************************/
+extern fp32 Int16ArrayToFloat(uint16 *Source);
+
+/*********************************************************************************************************
+* Function name:        AverageSelectUint16
+* Descriptions:         对字数组排序取中间的平均值
+* input parameters:     数组指针，数组长度
+* output parameters:    无
+* Returned value:       平均值
+*********************************************************************************************************/
+extern uint32 AverageSelectUint16(uint16 *dat,uint8 length);
+
+/*********************************************************************************************************
+* Function name:        AverageSelectFp
+* Descriptions:         对字数组排序取中间的平均值
+* input parameters:     数组指针，数组长度
+* output parameters:    无
+* Returned value:       平均值
+*********************************************************************************************************/
+extern fp32 AverageSelectFp(fp32 *dat,uint8 length);
+
+/**********************************************************	********
+* Function name:        MovingAverage
+* Descriptions:         移动平均
+* input parameters:     数组指针，数组长度，移动数目
+* output parameters:    无
+* Returned value:       最大值
+****************************************************************************/
+extern fp32 MovingAverage(int16 *dat,uint32 length,uint8 num);
+
+/**********************************************************	********
+* Function name:        LzgCStrlen
+* Descriptions:         返回 数组长度
+* input parameters:     数组指针，
+* output parameters:    无
+* Returned value:       长度
+****************************************************************************/
+extern uint16 LzgCStrlen(uint8 const s[]);
+
+/**********************************************************	********
+* Function name:        LzgCStrlen
+* Descriptions:         返回 汉字字符长度
+* input parameters:     数组指针，
+* output parameters:    无
+* Returned value:       长度
+****************************************************************************/
+extern uint16 LzgChineselen(uint8 const s[]);
+
+/*********************************************************************************************************
+* Function name:      StringLen  
+* Descriptions:       返回字符串长度  
+* input parameters:    s 
+* output parameters:    
+* Returned value:    汉字字符字节数   
+*********************************************************************************************************/
+extern uint16 StringLen(uint8 const s[]);
+/***************************************************************************
+* Function name:        StrCopyStr
+* Descriptions:         复制length 长度的字符串
+* input parameters:     数组指针1，数组指针2 长度
+* output parameters:    无
+* Returned value:       无
+****************************************************************************/
+extern void StrCopyStr (uint8 *arr1,const uint8 *arr2,uint8 length);
+
+#ifdef __cplusplus
+	}
+#endif                                                                  /*  __cplusplus                 */
+
+#endif
+
+/********************************************************************************************************
+  End Of File                                                                             
+********************************************************************************************************/

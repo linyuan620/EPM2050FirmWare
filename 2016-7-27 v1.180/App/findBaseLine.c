@@ -1,0 +1,401 @@
+/****************************************Copyright (c)****************************************************
+**                            		skyray-instrument Co.,LTD.
+**
+**                                 http://www.skyray-instrument.com
+**
+**--------------File Info---------------------------------------------------------------------------------
+** File Name:           findBaseLine.c
+** Last modified Date:  2011-02-24
+** Last Version:        V1.0
+** Descriptions:
+**
+**--------------------------------------------------------------------------------------------------------
+*********************************************************************************************************/
+#include "findBaseLine.h"
+#define MEASURE_WINDOWS_WIDTH	500
+/*
+点集的中心x坐标
+点集的中心y坐标
+点集的最后一点x坐标
+点集的最后一点y坐标
+点集的y坐标最小值
+点集的y坐标最大值
+*/
+static DATA_TYPE x_centor = 0;
+static DATA_TYPE y_centor = 0;
+static DATA_TYPE x_end = 0;
+static DATA_TYPE y_end = 0;
+static DATA_TYPE y_min = 0;
+static DATA_TYPE y_max = 0;
+
+/*
+凸函数因子((y_max - y_min) / 10)
+凸函数因子(x_end - x_centor)* (x_end - x_centor)
+加上凸函数后的y坐标
+凸包数据x坐标
+凸包数据y坐标
+*/
+static fp32 convex_func_F = 0;
+static fp32 convex_func_N = 0;
+static DATA_TYPE add_convex_y[MEASURE_WINDOWS_WIDTH] = {0};
+static DATA_TYPE convex_x[MEASURE_WINDOWS_WIDTH] = {0};
+static DATA_TYPE convex_y[MEASURE_WINDOWS_WIDTH] = {0};
+
+static DATA_TYPE x_data[MEASURE_WINDOWS_WIDTH] = {0};
+static uint16 length;
+
+#define	 FACTOR		3.5          //所加凸函数影响因子
+
+#define  CONVEX_FUNC_VAL(x) (convex_func_F * abs(((x) - x_centor) * ((x) - x_centor)) / convex_func_N)
+
+/**********************************************
+func:根据data,寻找最值。包括最大和最小值
+input：data:数据源 ，length:数据点数。
+output:min，最小值。max:最大值
+return:0,无错误。-1：出错
+**********************************************/
+int find_extrernes(DATA_TYPE *data,uint16 length,DATA_TYPE *min,DATA_TYPE *max)
+{
+    uint16 i;
+
+    if (NULL == data ||
+            NULL == min || NULL == max)
+    {
+        Print_Debug("传入空指针!\n");
+        return -1;
+    }
+
+    if (length <= 0)
+    {
+        Print_Debug("数据长度大于0!\n");
+        return -1;
+    }
+
+    *min = *max = data[0];
+    for (i = 1; i < length; i ++)
+    {
+        if (data[i] > *max)
+        {
+            *max = data[i];
+        }
+
+        if (data[i] < *min)
+        {
+            *min = data[i];
+        }
+    }
+    return 0;
+}
+
+
+/************************************************************
+func:根据横坐标填充直线，使其组成一条与原始曲线有相同个数的点
+input：x_data,被填充数据x坐标。y_data,被填充数据y坐标。
+		length,被填充数据长度。fill_length：需要填充的长度
+		fill_x_data：填充数据的x坐标
+output:fill_y_data：填充数据的y坐标
+return:0,无错。-1：出错
+************************************************************/
+int8 fill_line(const DATA_TYPE *x_data,const DATA_TYPE *y_data,uint16 length,
+               const DATA_TYPE *fill_x_data,uint16 fill_length,DATA_TYPE *fill_y_data)
+{
+    // 直线的斜率
+    fp32 line_k;
+    // 直线的截距
+    fp32 line_b;
+    uint16 i = 0,j = 0;
+
+    if (NULL == x_data || NULL == y_data ||
+            NULL == fill_x_data || NULL == fill_y_data)
+    {
+        Print_Debug("传入空指针!\n");
+        return -1;
+    }
+
+    if (length <= 0)
+    {
+        Print_Debug("数据长度大于0!\n");
+        return -1;
+    }
+
+
+    for (i = 0; i < fill_length; i ++)
+    {
+        for (j = 1; j < length - 1 ; j ++)
+        {
+            if ((fill_x_data[i] >= x_data[j - 1]) &&
+                    (fill_x_data[i] <= x_data[j]))
+            {
+                //找到斜率
+                if (x_data[j - 1] != x_data[j])
+                {
+                    line_k = ((fp32)(y_data[j - 1] - y_data[j])) / (x_data[j - 1] - x_data[j]);
+                }
+                else
+                {
+                    line_k = 0;
+                }
+                line_b = y_data[j - 1] - line_k * x_data[j - 1];
+
+                fill_y_data[i] = line_k * fill_x_data[i] + line_b;
+                break;
+            }
+        }
+        //最后一个点直接和凸包最后一个点相等
+        if (j == length - 1)
+        {
+            if (x_data[j - 1] != x_data[j])
+            {
+                line_k = ((fp32)(y_data[j - 1] - y_data[j])) / (x_data[j - 1] - x_data[j]);
+            }
+            else
+            {
+                line_k = 0;
+            }
+            line_b = y_data[j - 1] - line_k * x_data[j - 1];
+
+            fill_y_data[i] = line_k * fill_x_data[i] + line_b;
+//			fill_y_data[i] = fill_y_data[i - 1];
+//			fill_y_data[i] = y_data[j];
+        }
+    }
+    return 0;
+}
+
+/**********************************************
+func:判断三点组成是否为左拐
+input：DATA_TYPE first_x,DATA_TYPE first_y,
+		DATA_TYPE second_x,DATA_TYPE second_y,
+		DATA_TYPE third_x,DATA_TYPE third_y
+output:void
+return:false,右拐。true：左拐
+**********************************************/
+bool is_turn_left(DATA_TYPE first_x,DATA_TYPE first_y,
+                  DATA_TYPE second_x,DATA_TYPE second_y,
+                  DATA_TYPE third_x,DATA_TYPE third_y)
+{
+    fp32 judge = (fp32)(second_x -  first_x) * (third_y - first_y) -
+                 (third_x - first_x) * (second_y - first_y);
+    return (judge > 0) ? true : false;
+}
+
+/**********************************************
+func:根据x_data,y_data,寻找曲线的下凸包
+input：x_data，输入横坐标。y_data:输入y坐标
+	   length:坐标点数。
+output:down_convex_x下凸包的x坐标，down_convex_y下凸包的y坐标
+		convex_cnt,下凸包数据个数
+return:0,无错误。-1：出错
+**********************************************/
+int8 get_down_convex(int16 *x_data,int16 *y_data,uint16 length,
+                     int16 *down_convex_x,int16 *down_convex_y,uint16 *convex_cnt)
+{
+    int i = 0;
+    if (NULL == x_data || NULL == y_data || NULL == down_convex_x ||
+            NULL == down_convex_y || NULL == convex_cnt)
+    {
+        Print_Debug("传入空指针!\n");
+        return -1;
+    }
+    if (length <= 0)
+    {
+        Print_Debug("数据长度大于0!\n");
+        return -1;
+    }
+    *convex_cnt = 0;
+
+    down_convex_x[0] = x_data[0];
+    down_convex_x[1] = x_data[1];
+    down_convex_y[0] = y_data[0];
+    down_convex_y[1] = y_data[1];
+    *convex_cnt = 2;
+
+    for (i = 2; i < length; i ++)
+    {
+        down_convex_x[*convex_cnt] = x_data[i];
+        down_convex_y[*convex_cnt] = y_data[i];
+        (*convex_cnt) ++;
+
+        while ((*convex_cnt) >= 3)
+        {
+            if (!is_turn_left(down_convex_x[(*convex_cnt) - 3],
+                              down_convex_y[(*convex_cnt) - 3],
+                              down_convex_x[(*convex_cnt) - 2],
+                              down_convex_y[(*convex_cnt) - 2],
+                              down_convex_x[(*convex_cnt) - 1],
+                              down_convex_y[(*convex_cnt) - 1]))
+            {
+                down_convex_x[(*convex_cnt) - 2] = down_convex_x[(*convex_cnt) - 1];
+                down_convex_y[(*convex_cnt) - 2] = down_convex_y[(*convex_cnt) - 1];
+                (*convex_cnt) --;
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+    return 0;
+}
+
+/**********************************************
+func:根据x_data,y_data,寻找曲线的基线
+input：x_data，输入横坐标。y_data:输入y坐标
+	   length:坐标点数。loop_cnt：循环次数
+output:y_baseline，基线的y坐标
+return:0,无错误。-1：出错
+remarks：输入的数据必须是按照横坐标顺序排列的点
+**********************************************/
+int8 find_baseline(DATA_TYPE *y_data,uint8 loop_cnt)
+{
+//	int16 x_Data[500];
+//	DATA_TYPE xLength;
+
+    //临时数组
+//	DATA_TYPE tmp_y[10];
+    // 凸包数据长度
+    uint16 convex_length = 0;
+    uint16 i = 0;
+
+//	uint16 *y_baseline;
+
+// 	if (NULL == y_data)
+// 	{
+//	 	Print_Debug("传入空指针!\n");
+//	 	return -1;
+//	}
+//  	if (length <= 0)
+//  	{
+//		Print_Debug("数据长度大于0!\n");
+//		return -1;
+//	}
+//	if (loop_cnt <= 0)
+//	{
+// 	 	Print_Debug("循环次数大于0!\n");
+//  	 	return -1;
+//  	}
+
+//  	for (i = 0;i < length;i ++)
+//  	{
+//  		tmp_y[i] = y_data[i];
+//	}
+
+    length = GetXData(&runMenuParameter,x_data);
+
+    if(length>MEASURE_WINDOWS_WIDTH)
+    {
+        return -1;
+    }
+
+    while (loop_cnt > 0)
+    {
+        //初始化全局变量
+        find_extrernes(y_data,length,&y_min,&y_max);
+        x_centor = x_data[length / 2];
+        y_centor = y_data[length / 2];
+        x_end = x_data[length - 1];
+        y_end = y_data[length - 1];
+        convex_func_F = (y_max - y_min) / FACTOR;
+        convex_func_N = abs((x_end - x_centor)* (x_end - x_centor));
+        if( 0 == convex_func_N )
+        {
+            return -1;		//除数为0了
+        }
+        // 将原始曲线加上凸函数曲线
+        for (i = 0; i < length; i ++)
+        {
+            add_convex_y[i] = y_data[i] + CONVEX_FUNC_VAL(x_data[i]);
+        }
+
+        if (0 != get_down_convex(x_data,add_convex_y,length,convex_x,convex_y,&convex_length))
+        {
+            return -1;
+        }
+        if (0 != fill_line(convex_x,convex_y,convex_length,x_data,length,y_data))
+        {
+            return -1;
+        }
+        //得到矫正线
+        for (i = 0; i < length; i ++)
+        {
+            y_data[i] = add_convex_y[i] - y_data[i];
+        }
+
+        loop_cnt --;
+//		if (loop_cnt > 0)
+//		{
+//			for (i = 0;i < length;i ++)
+//			{
+//				y_data[i] = y_baseline[i];
+//			}
+//		}
+    }
+    return 0;
+}
+/**********************************************
+func:根据x_data,y_data,基线的面积
+input：x_data，输入横坐标。y_data:输入y坐标
+	   length:坐标点数。
+output:基线的面积
+return:0,无
+remarks：输入的数据必须是按照横坐标顺序排列的点
+**********************************************/
+fp32 GetCalculationArea(DATA_TYPE *y_data)
+{
+    uint16 i;
+    uint16 chang,kuan;
+    fp32 areaS;
+    fp32 areaLine = 0;
+
+    if ((NULL == y_data)||(NULL == x_data))
+    {
+        return -1;
+    }
+
+    length = GetXData(&runMenuParameter,x_data);
+
+    for(i=0; i<length-1; i++)
+    {
+        chang = (y_data[i+1] + y_data[i])/2;
+        kuan = x_data[i+1] - x_data[i];			//可以用step代替
+
+        areaS = (fp32)chang*kuan;
+
+        areaLine += areaS;
+    }
+
+    return areaLine;
+}
+
+/**********************************************
+func:根据x_data,y_data,基线的峰高
+input：x_data，输入横坐标。y_data:输入y坐标
+	   length:坐标点数。
+output:基线的峰高
+return:0,无
+remarks：输入的数据必须是按照横坐标顺序排列的点
+**********************************************/
+fp32 GetCalculationPeak(DATA_TYPE *y_data)
+{
+    uint16 i;
+//	fp32 peak;
+    fp32 I_max = 0;
+
+    if ((NULL == y_data)||(NULL == x_data))
+    {
+        return -1;
+    }
+
+    length = GetXData(&runMenuParameter,x_data);
+
+    for(i=0; i<length-3; i++)
+    {
+        if( y_data[i+2] > I_max )
+        {
+            I_max =y_data[i+2];
+        }
+    }
+
+    return(I_max);
+}
+

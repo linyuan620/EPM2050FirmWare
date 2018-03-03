@@ -1,0 +1,67 @@
+/*********************************************************************************************************
+Copyright (C), 2011-8-3 ,  Skyray Instrment Co.,LTD.
+File name:      	Print.h
+Author:              何顺杰       Version:       V2.5 Date:      2011-8-3 11:37:43
+Description:
+Others:
+Function List:
+		extern void PrintValue(fp32 fValuel,uint8 length,uint8 decimal);
+		extern void PrintRecord_page(uint32 num) ;
+		extern void PrintRecord_one(uint32 num)
+		extern void Research();
+History:
+   1. Date:                2011-8-3 12:52:43
+       Author:             何顺杰
+	   Modification:    规范了注释
+************************************************************************************************************/
+#ifndef __Print_H
+#define __print_H
+
+#include "global.h"
+
+extern unsigned char hanzi_com[];
+extern unsigned char ascii_com[];
+
+extern unsigned char heshunjie[];
+extern unsigned char zifuji[];
+extern unsigned char PrintEn;
+extern void Research(void);
+/*********************************************************************************************************
+* Function name: void PrintValue(void)
+* Descriptions:  打印浓度
+* input parameters:  fvaluel 浓度值
+						length
+						decimal 十进制位数
+* output parameters:
+* Returned value:
+*********************************************************************************************************/
+extern void PrintValue(fp32 fValuel,uint8 length,uint8 decimal);
+/*********************************************************************************************************
+* Function name:       PrintRecord
+* Descriptions:        打印当前记录 和以上的数据 最多10条
+* input parameters:    num ，打印的 储存点
+						tnum 打印数据的条数
+* output parameters:
+* Returned value:       无
+*********************************************************************************************************/
+extern void PrintRecord_page(uint32 num) ;
+
+/*********************************************************************************************************
+* Function name:       PrintRecord_one
+* Descriptions:        打印当前 选中的 记录 数据
+* input parameters:    num ，打印的 储存点
+						tnum 打印数据的条数
+* output parameters:
+* Returned value:       无
+*********************************************************************************************************/
+extern void PrintRecord_one(uint32 num);  /*排位点 写的数*/
+
+/*********************************************************************************************************
+* Function name:   Research
+* Descriptions:    蓝牙重新配对
+* input parameters:
+* output parameters:
+* Returned value:
+*********************************************************************************************************/
+//extern void Research();
+#endif

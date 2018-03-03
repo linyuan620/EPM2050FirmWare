@@ -1,0 +1,6 @@
+1、在empoll力加入中断判定在进行处理------思路
+2、添加网络驱动文件  TCPIP.C  
+3、去掉以前的modubslib  换为原始的 源文件 freemodbus 
+4、改掉主函数任务App_TaskUserIF
+5、global.h包含 W5100.DRIVE.H  TCPIP.H  W5100.H
+6 初始化调用

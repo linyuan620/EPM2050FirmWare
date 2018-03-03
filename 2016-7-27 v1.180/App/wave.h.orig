@@ -1,0 +1,361 @@
+/*********************************************************************************************************
+Copyright (C), 2011-8-3 ,  Skyray Instrment Co.,LTD.
+File name:      	wave.h
+Author:                   方卫龙 夏洪海      Version:       V2.5 Date:      2011-8-3 11:37:43
+Description:    	 波形发生函数集
+
+Others:         
+Function List:  
+		extern uint8 StartCV(WAVE_RUN_PARAMETER *runParameter,
+					ELECTRODE_CONDITION *electrodeCondition,
+					uint8 waveStart);//设置CV扫描参数
+		extern uint8 SetWaveform (WAVE_RUN_PARAMETER *runParameter,
+					WAVE_PARAMETER *parameter,
+					uint8 waveType);//设置运行波形参数
+		extern uint8 StartWaveform(WAVE_RUN_PARAMETER *runParameter,uint8 waveStart);
+		extern uint16 GetSweepTime(WAVE_PARAMETER *parameter);
+		extern uint16 GetXData(MENU_PARAMETER *parameter,int16 *pdat);
+		extern int8 GetYDataStart(MENU_PARAMETER *parameter,uint16 *YAddLength);
+		extern void WriteRecord(uint16 recordP,MEAS_RECORD *record);//e2rom 存数 
+		extern void ReadRecord(uint16 recordP,MEAS_RECORD *record);
+
+History:         
+   1. Date:                2011-8-3 12:52:43
+       Author:             何顺杰
+	   Modification:    规范了注释
+************************************************************************************************************/
+#ifndef __WAVE_H
+#define __WAVE_H
+
+/*********************************************************************************************************
+**               头文件包含                                                                             
+*********************************************************************************************************/
+#include "global.h"
+
+/*********************************************************************************************************
+**               C++代码兼容                                                                            
+*********************************************************************************************************/
+#ifdef __cplusplus
+extern "C" {
+#endif 
+                                                                 /*  __cplusplus                 */
+
+typedef struct {                                                      
+    fp32	startVoltage; 			/*起始电压*/            
+    fp32	endVoltage;             /*结束电压*/             
+    fp32	sweepSpeed;             /*扫描速度*/                            
+    fp32	sweepStep;              /*扫描步进*/ 
+    fp32	peakHeight;             /*脉冲高度*/
+    fp32	dutyCycle;              /*脉冲占空比*/  
+	fp32	waveDelay;              /*采样延时ms*/
+	uint16	waveADCount;                      
+} WAVE_PARAMETER;
+
+typedef struct {                                                      
+    uint32	time1Value; 			/*定时器值1 100us基数*/            
+    uint32	time2Value;             /*定时器值2*/             
+    uint32	timeCount;              /*重复次数*/ 
+	uint8	waveType; 
+	uint32	waveTimeDelay;			/*波形激励延时*/                                                               
+} WAVE_RUN_PARAMETER;
+
+typedef struct {                                                      
+    fp32	startVoltage; 			/*起始电压*/            
+    fp32	endVoltage;             /*结束电压*/             
+    fp32	sweepSpeed;             /*扫描速度*/                            
+    fp32	sweepStep;              /*扫描步进*/ 
+	uint16	Count;                  /*扫描圈数*/    
+} ELECTRODE_CONDITION;
+
+typedef struct {                                                      
+    fp32	FirstPotential;			/*第一电压*/            
+    fp32	SecondPotential;		/*第二电压*/             
+    fp32	DutyCycle;				/*占空比*/                            
+    uint16	CyclePeriod;			/*周期时间*/ 
+	uint16	ConditiontionTime;		/*调节时间*/                    
+} ELECTRODE_ACTIVATION;
+
+typedef struct {                                                      
+    uint16	filmTime; 				 /*膜时间*/            
+    fp32	filmVoltage;             /*膜电压*/                                 
+} FILM_PARAMETER;
+
+typedef struct {                                                      
+    fp32	mixVoltage; 			/*混合电压*/ 
+	uint16	mixTime;				/*混合时间*/
+	fp32	accumulationVoltage;	/*富集电压*/ 		          
+    uint16	accumulationTime;       /*富集时间*/ 
+	fp32	staticVoltage;			/*静置电压*/ 		          
+    uint16	staticTime;       		/*静置时间*/ 	            
+	uint16	MeasureType;            /*测量方法*/          
+} MEASURE_PARAMETER;
+
+typedef struct{
+	fp32	concentration;
+	uint16	depositTime;
+	uint16	measRange;			
+
+}MENU_RANGE;
+
+typedef struct{
+	uint8				menuName[10];			/*菜单名*/
+	uint8				sweepType;				/*扫描方法*/
+	MENU_RANGE			range[6];				/*量程参数*/
+    fp32				mixPotential; 			/*混合电压*/ 
+	uint16				mixTime;				/*混合时间*/
+	fp32				depositPotential;		/*富集电压*/ 		          
+	fp32				holdPotential;			/*静置电压*/ 		          
+    uint16				holdTime;       		/*静置时间*/ 		
+    fp32				sweepStart; 			/*起始电压*/            
+    fp32				sweepStop;             	/*结束电压*/             
+    fp32				sweepSpeed;             /*扫描速度*/                            
+    fp32				sweepStep;              /*扫描步进*/ 
+    fp32				pluseHeight;            /*脉冲高度*/
+    fp32				dutyCycle;              /*脉冲占空比*/  
+	fp32				sampleDelay;            /*采样延时ms*/
+	uint16				sampleCount; 			/*采样次数*/
+	fp32				measureStart;			/*测量窗开始*/ 
+	fp32				measureStop;			/*测量窗结束*/ 
+	fp32				CleanPotential;			/*清洗电压*/ 		          
+    uint16				CleanTime;       		/*清洗时间*/ 
+}MENU_PARAMETER;
+
+typedef struct 
+{
+	uint8 ParamName;
+	uint8 font;		//
+	uint8 length;
+	uint8 decimal;
+	uint8 DisSign;
+}
+DISDATSTR;
+#define NUM_PARAM 25
+//参数类型
+#define PARAM_NOMAL	   			0
+#define PARAM_SHIDUMENFA	   1
+#define PARAM_MAXHEAT		   2
+#define PARAM_MINHEATPOWER	   3
+#define PARAM_LIULIANG		   4
+#define PARAM_CYCLEOFSAMP	   5
+#define PARAM_HIGHV			   6
+#define PARAM_BIAOPIAN_JIAOZHUN	 7
+#define PARAM_T1_JIAOZHUN		8
+#define PARAM_DUIBIDU			9
+#define PARAM_RH_JIAOZHUN		10
+#define	PARAM_QIYA_JIAOZHUN		11
+#define	PARAM_LIULIANG_JIAOZHUN	 12
+#define PARAM_PUMP_JIAOZHUN		 13
+#define PARAM_MONITONGDAO		 14
+#define PARAM_MONIZHI		 15
+#define PARAM_T3_JIAOZHUN		16
+
+extern void DisValue2(fp32 fValuel,uint16 x,uint8 y, DISDATSTR *DisDat ,uint8 *DanWei);
+extern DISDATSTR  DisDat;
+extern  DISDATSTR const DisDat2[NUM_PARAM];
+
+
+typedef struct{
+//	uint8		menuName[10];
+	TimeDat		recordTimeStart;
+	TimeDat		recordTimeEnd;
+	fp32		recordResult;
+	fp32		I;
+	fp32		I0;		
+
+}MEAS_RECORD;
+
+extern WAVE_PARAMETER waveParameter;
+
+extern WAVE_RUN_PARAMETER waveRunParameter;
+extern WAVE_PARAMETER waveParameterForTest;
+
+extern ELECTRODE_CONDITION electrodeCondition;		//CV调节
+
+extern ELECTRODE_ACTIVATION electrodeActivation;
+
+extern FILM_PARAMETER filmParameter; 
+
+extern MEASURE_PARAMETER measureParameter;
+
+extern MENU_PARAMETER menuParameter[MENUADDSIZE];
+
+extern MENU_PARAMETER *pmenuParameter;
+
+extern MENU_PARAMETER runMenuParameter;
+
+extern MEAS_RECORD measRecord;
+
+extern uint16 cleanTime;
+
+extern uint16 sweepTime;
+
+extern uint16 currentGain;
+
+//extern uint16 ADsampleResult[2000];
+/*********************************************************************************************************
+* Function name:        StartCV
+* Descriptions:         设置CV扫描参数
+* input parameters:     waveType:	波形类型
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern uint8 StartCV(WAVE_RUN_PARAMETER *runParameter,ELECTRODE_CONDITION *electrodeCondition,uint8 waveStart);
+
+/*********************************************************************************************************
+* Function name:        SetWaveform
+* Descriptions:         设置运行波形参数
+* input parameters:     waveType:	波形类型
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern uint8 SetWaveform (WAVE_RUN_PARAMETER *runParameter,WAVE_PARAMETER *parameter,uint8 waveType);
+
+/*********************************************************************************************************
+* Function name:        StartWaveform
+* Descriptions:         启动波形产生函数
+* input parameters:     waveStart:	波形类型
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern uint8 StartWaveform(WAVE_RUN_PARAMETER *runParameter,uint8 waveStart);
+
+/*********************************************************************************************************
+* Function name:        GetSweepTime
+* Descriptions:         驱动反扫时间
+* input parameters:     *parameter:	波形设置参数
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern uint16 GetSweepTime(WAVE_PARAMETER *parameter);
+/*********************************************************************************************************
+* Function name:  		GetXData      
+* Descriptions:   		对xdata 赋值      
+* input parameters:   	*parameter 测量参数信息 	  	 
+* output parameters:  	*padt  xdata 被赋值  
+* Returned value:     	icount  测量点数  
+*********************************************************************************************************/
+extern uint16 GetXData(MENU_PARAMETER *parameter,int16 *pdat);
+
+/*********************************************************************************************************
+* Function name:   		GetYDataStart     
+* Descriptions:      	ydata 的大小   
+* input parameters:   	*parameter  	测量参数
+* output parameters:  	*YAddLength   ydata 大小
+* Returned value:      	0
+*********************************************************************************************************/
+extern int8 GetYDataStart(MENU_PARAMETER *parameter,uint16 *YAddLength);
+/*********************************************************************************************************
+* Function name:   		GetYDataStop     
+* Descriptions:      	ydata 的大小   
+* input parameters:   	*parameter  	测量参数
+* output parameters:  	*YPluseLength   ydata 大小
+* Returned value:      	0
+*********************************************************************************************************/
+
+extern int8 GetYDataStop(MENU_PARAMETER *parameter,uint16 *YPluseLength);
+
+/*********************************************************************************************************
+* Function name: 		WriteRecord       
+* Descriptions:  		e2rom 存数 ：  名称      时间     结果
+* input parameters:   	recordP  存入的排位点    *record 	存入的结构体
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern void WriteRecord(uint16 recordP,MEAS_RECORD *record);
+
+/*********************************************************************************************************
+* Function name:       ReadRecord 
+* Descriptions:        对出该排位点的数据： 名称 时间 结果 
+* input parameters:    uint16 recordP  存入的排位点,
+* output parameters:   MEAS_RECORD *record 读出的结构体 
+* Returned value:      无 
+*********************************************************************************************************/
+extern void ReadRecord(uint16 recordP,MEAS_RECORD *record);
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************************************************
+* Function name:        defilm
+* Descriptions:         去膜
+* input parameters:     无
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern void defilm(void);
+
+/*********************************************************************************************************
+* Function name:        CoatingFilm
+* Descriptions:         镀膜
+* input parameters:     无
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern void CoatingFilm(void);
+
+/*********************************************************************************************************
+* Function name:        clean2
+* Descriptions:         待溶出电位的清洗
+* input parameters:     无
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern void Clean2(void);
+											 
+/*********************************************************************************************************
+* Function name:        AnodicStrippingVoltammetry
+* Descriptions:         阳极溶出法
+* input parameters:     无
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern void AnodicStrippingVoltammetry(void);
+
+/*********************************************************************************************************
+* Function name:        Regulate
+* Descriptions:         调节
+* input parameters:     无
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern void Regulate(void);
+
+/*********************************************************************************************************
+* Function name:        Clean
+* Descriptions:         物理清洗，不带电压
+* input parameters:     无
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern void Clean(void);
+
+/*********************************************************************************************************
+* Function name:        ReadHistory
+* Descriptions:         读历史数据
+* input parameters:     无
+* output parameters:    无
+* Returned value:       无
+*********************************************************************************************************/
+extern void ReadHistory(void);
+extern int32 DarwGammaLine(MENU_PARAMETER *parameter,DATA_TYPE *y_data,char flag);
+
+extern int32 DarwGammaLine2(MENU_PARAMETER *parameter,DATA_TYPE *y_data,char flag);
+
+
+void Regulate(void);
+#ifdef __cplusplus
+	}
+#endif                                                                  /*  __cplusplus                 */
+
+#endif
+
+/********************************************************************************************************
+  End Of File                                                                             
+********************************************************************************************************/

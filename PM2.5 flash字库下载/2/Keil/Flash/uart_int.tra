@@ -1,0 +1,52 @@
+*** Creating Trace Output File '.\Flash\uart_int.tra' Ok.
+### Preparing for ADS-LD.
+### Creating ADS-LD Command Line
+### List of Objects: adding '".\flash\startup_lpc17xx.o"'
+### List of Objects: adding '".\flash\system_lpc17xx.o"'
+### List of Objects: adding '".\flash\core_cm3.o"'
+### List of Objects: adding '".\flash\debug_frmwrk.o"'
+### List of Objects: adding '".\flash\lpc17xx_adc.o"'
+### List of Objects: adding '".\flash\lpc17xx_can.o"'
+### List of Objects: adding '".\flash\lpc17xx_clkpwr.o"'
+### List of Objects: adding '".\flash\lpc17xx_dac.o"'
+### List of Objects: adding '".\flash\lpc17xx_emac.o"'
+### List of Objects: adding '".\flash\lpc17xx_exti.o"'
+### List of Objects: adding '".\flash\lpc17xx_gpdma.o"'
+### List of Objects: adding '".\flash\lpc17xx_gpio.o"'
+### List of Objects: adding '".\flash\lpc17xx_i2c.o"'
+### List of Objects: adding '".\flash\lpc17xx_i2s.o"'
+### List of Objects: adding '".\flash\lpc17xx_libcfg_default.o"'
+### List of Objects: adding '".\flash\lpc17xx_mcpwm.o"'
+### List of Objects: adding '".\flash\lpc17xx_nvic.o"'
+### List of Objects: adding '".\flash\lpc17xx_pinsel.o"'
+### List of Objects: adding '".\flash\lpc17xx_pwm.o"'
+### List of Objects: adding '".\flash\lpc17xx_qei.o"'
+### List of Objects: adding '".\flash\lpc17xx_rit.o"'
+### List of Objects: adding '".\flash\lpc17xx_rtc.o"'
+### List of Objects: adding '".\flash\lpc17xx_spi.o"'
+### List of Objects: adding '".\flash\lpc17xx_ssp.o"'
+### List of Objects: adding '".\flash\lpc17xx_systick.o"'
+### List of Objects: adding '".\flash\lpc17xx_timer.o"'
+### List of Objects: adding '".\flash\lpc17xx_uart.o"'
+### List of Objects: adding '".\flash\lpc17xx_wdt.o"'
+### List of Objects: adding '".\flash\main.o"'
+### List of Objects: adding '".\flash\gps.o"'
+### List of Objects: adding '".\flash\uart.o"'
+### List of Objects: adding '".\flash\spi.o"'
+### List of Objects: adding '".\flash\zk.o"'
+### ADS-LD Command completed:
+--cpu Cortex-M3 ".\flash\startup_lpc17xx.o" ".\flash\system_lpc17xx.o" ".\flash\core_cm3.o" ".\flash\debug_frmwrk.o" ".\flash\lpc17xx_adc.o" ".\flash\lpc17xx_can.o" ".\flash\lpc17xx_clkpwr.o" ".\flash\lpc17xx_dac.o" ".\flash\lpc17xx_emac.o" ".\flash\lpc17xx_exti.o" ".\flash\lpc17xx_gpdma.o" ".\flash\lpc17xx_gpio.o" ".\flash\lpc17xx_i2c.o" ".\flash\lpc17xx_i2s.o" ".\flash\lpc17xx_libcfg_default.o" ".\flash\lpc17xx_mcpwm.o" ".\flash\lpc17xx_nvic.o" ".\flash\lpc17xx_pinsel.o" ".\flash\lpc17xx_pwm.o" ".\flash\lpc17xx_qei.o" ".\flash\lpc17xx_rit.o" ".\flash\lpc17xx_rtc.o" ".\flash\lpc17xx_spi.o" ".\flash\lpc17xx_ssp.o" ".\flash\lpc17xx_systick.o" ".\flash\lpc17xx_timer.o" ".\flash\lpc17xx_uart.o" ".\flash\lpc17xx_wdt.o" ".\flash\main.o" ".\flash\gps.o" ".\flash\uart.o" ".\flash\spi.o" ".\flash\zk.o" 
+--library_type=microlib --scatter ".\Flash\uart_int.sct" 
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols 
+--info sizes --info totals --info unused --info veneers 
+ --list ".\Flash\uart_int.map" -o .\Flash\uart_int.axf### Preparing Environment (PrepEnvAds)
+### ADS-LD Output File: '.\Flash\uart_int.axf'
+### ADS-LD Command File: '.\Flash\uart_int.lnp'
+### Checking for dirty Components...
+### Creating CmdFile '.\Flash\uart_int.lnp', Handle=0x00000710
+### Writing '.lnp' file
+### ADS-LD Command file '.\Flash\uart_int.lnp' is ready.
+### ADS-LD: About to start ADS-LD Thread.
+### ADS-LD: executed with 0 errors
+### Updating obj list
+### LDADS_file() completed.

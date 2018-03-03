@@ -1,0 +1,17 @@
+.\flash\zk.o: ..\app\zk.c
+.\flash\zk.o: ..\app\include\globle.h
+.\flash\zk.o: ..\Drivers\include\lpc17xx_uart.h
+.\flash\zk.o: ..\Core\CM3\DeviceSupport\NXP\LPC17xx\LPC17xx.h
+.\flash\zk.o: ..\Core\CM3\CoreSupport\core_cm3.h
+.\flash\zk.o: C:\Keil\ARM\ARMCC\bin\..\include\stdint.h
+.\flash\zk.o: ..\Core\CM3\DeviceSupport\NXP\LPC17xx\system_LPC17xx.h
+.\flash\zk.o: ..\Drivers\include\lpc_types.h
+.\flash\zk.o: ..\app\include\lpc17xx_libcfg.h
+.\flash\zk.o: ..\Drivers\include\lpc17xx_pinsel.h
+.\flash\zk.o: ..\Drivers\include\lpc17xx_gpio.h
+.\flash\zk.o: ..\app\include\UART.H
+.\flash\zk.o: ..\app\include\Globle.h
+.\flash\zk.o: ..\app\include\Dio.H
+.\flash\zk.o: ..\app\include\GPS.H
+.\flash\zk.o: ..\app\include\SPI.H
+.\flash\zk.o: C:\Keil\ARM\ARMCC\bin\..\include\string.h
