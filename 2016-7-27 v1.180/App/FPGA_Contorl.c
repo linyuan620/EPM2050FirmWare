@@ -1861,7 +1861,7 @@ int MeasureStep(void)
             Parg_v_BK = TV_BK/60.0;//单位L即dm3 标况的体积 看是什么地方的标准
 
             Parg_PM25 = 1000000.0*Parg_m/Parg_v_BK;	  //单位mg/L
-            Parg_PM25 = Parg_PM25 + Parg_b;
+            Parg_PM25 = Parg_PM25 + Parg_b - 20;
             if(Parg_PM25<0.01)
             {
                 Parg_PM25 = 6.75;//防止存储负值。

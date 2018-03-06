@@ -1345,7 +1345,7 @@ I (App\keyshow.h)(0x584CFADA)
 I (App\store.h)(0x584CFAB5)
 I (App\DTU.h)(0x584CFB08)
 I (App\SHELL.h)(0x584CFB06)
-F (.\App\FPGA_Contorl.c)(0x597166F5)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --signed_chars -I.\Core\CM3\CoreSupport -I.\Core\CM3\DeviceSupport\NXP\LPC17xx -I.\Drivers\include -I.\uC-CPU -I.\uC-CPU\ARM-Cortex-M3\RealView -I.\uCOS-II\Ports\ARM-Cortex-M3\Generic\RealView -I.\uCOS-II\Source -I.\uC-LIB -I.\uC-LIB\Ports\ARM-Cortex-M3\RealView -I.\App -I.\Modbus\modbus\include -I.\Modbus\modbus\rtu -I.\Modbus\port -I.\Modbus\modbus\ascii -I.\Modbus\modbus\tcp -I.\Modbus\modbus\functions -I.\MBDriver -I.\MBDriver\master-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\NXP\LPC17xx-D__BUILD_WITH_EXAMPLE__="1" -D__RAM_MODE__="0" -DCH320-o .\flash\fpga_contorl.o --omf_browse .\flash\fpga_contorl.crf --depend .\flash\fpga_contorl.d)
+F (.\App\FPGA_Contorl.c)(0x5A9E2592)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --signed_chars -I.\Core\CM3\CoreSupport -I.\Core\CM3\DeviceSupport\NXP\LPC17xx -I.\Drivers\include -I.\uC-CPU -I.\uC-CPU\ARM-Cortex-M3\RealView -I.\uCOS-II\Ports\ARM-Cortex-M3\Generic\RealView -I.\uCOS-II\Source -I.\uC-LIB -I.\uC-LIB\Ports\ARM-Cortex-M3\RealView -I.\App -I.\Modbus\modbus\include -I.\Modbus\modbus\rtu -I.\Modbus\port -I.\Modbus\modbus\ascii -I.\Modbus\modbus\tcp -I.\Modbus\modbus\functions -I.\MBDriver -I.\MBDriver\master-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\NXP\LPC17xx-D__BUILD_WITH_EXAMPLE__="1" -D__RAM_MODE__="0" -DCH320-o .\flash\fpga_contorl.o --omf_browse .\flash\fpga_contorl.crf --depend .\flash\fpga_contorl.d)
 I (App\FPGA_Contorl.h)(0x584CFBEC)
 I (App\global.h)(0x596F1B83)
 I (App\lpc17xx_libcfg.h)(0x584CFB64)
