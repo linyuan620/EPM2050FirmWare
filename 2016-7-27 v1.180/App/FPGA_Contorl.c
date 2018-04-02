@@ -1405,9 +1405,9 @@ void 	NomalMeasure(void)
 
     //伴热带控制
     if(HeatOn)
-    {//测试仓湿度大于阈值
-        if((HumiditySample > Humidity ) &&(PumpFlg==0)/*泵打开*/ /*&& (abs(CYCShiDu - WenDuT3)<5)*/ && (WenDuT2<MaxHeatTemp))	 // 湿度大于阈值且采样口与检测舱温差小于5℃且DHS温度小于60℃
-        //if((CYCShiDu > Humidity ) &&(PumpFlg==0)/*泵打开*/ /*&& (abs(CYCShiDu - WenDuT3)<5)*/ && (WenDuT2<60))	 // 湿度大于阈值且采样口与检测舱温差小于5℃且DHS温度小于60℃
+    {//采样口湿度大于阈值
+				if((CYCShiDu > Humidity ) &&(PumpFlg==0)/*泵打开*/ && (abs(WenDuT1 - WenDuT3)<5) && (WenDuT2 < MaxHeatTemp))	 // 湿度大于阈值且采样口与检测舱温差小于5℃且DHS温度小于60℃
+        //if((HumiditySample > Humidity ) &&(PumpFlg==0)/*泵打开*/ /*&& (abs(CYCShiDu - WenDuT3)<5)*/ && (WenDuT2<MaxHeatTemp))	 // 湿度大于阈值且采样口与检测舱温差小于5℃且DHS温度小于60℃
         {
            // if(HeatFlg==1) { //伴热带关闭
                 HeatFlg = 0;//打开伴热带
